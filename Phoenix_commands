@@ -1,0 +1,85 @@
+*Create tables
+----------------
+CREATE TABLE IF NOT EXISTS STOCK_SYMBOL (SYMBOL VARCHAR NOT NULL PRIMARY KEY, COMPANY VARCHAR);
+
+*Load data into table
+----------------------
+UPSERT INTO STOCK_SYMBOL VALUES ('CRM','SalesForce.com');
+UPSERT INTO STOCK_SYMBOL VALUES ('AAPL','APPLE Inc.');
+UPSERT INTO STOCK_SYMBOL VALUES ('CRM','SALESFORCE');
+UPSERT INTO STOCK_SYMBOL VALUES ('GOOG','Google');
+UPSERT INTO STOCK_SYMBOL VALUES ('HOG','Harlet-Davidson Inc.');
+UPSERT INTO STOCK_SYMBOL VALUES ('HPQ','Hewlett Packard');
+UPSERT INTO STOCK_SYMBOL VALUES ('INTC','Intel');
+UPSERT INTO STOCK_SYMBOL VALUES ('MSFT','Microsoft');
+UPSERT INTO STOCK_SYMBOL VALUES ('WAG','Walgreens');
+UPSERT INTO STOCK_SYMBOL VALUES ('WMT','Walmart');
+
+
+*Fetch data from tables
+-----------------------
+SELECT * FROM STOCK_SYMBOL;
+
+
+
+*Create backup table
+------------------------
+CREATE TABLE STOCK_SYMBOL_BKP (SYMBOL VARCHAR NOT NULL PRIMARY KEY, COMPANY VARCHAR);
+
+
+*Load data to table
+---------------------
+UPSERT INTO STOCK_SYMBOL_BKP SELECT * FROM STOCK_SYMBOL;
+
+
+*Create Updatable View:
+------------------------
+create view STOCK_SYMBOL_VIEW (SYMBOL VARCHAR, CUR_DT DATE) AS SELECT * FROM STOCK_SYMBOL WHERE COMPANY LIKE 'W%';
+
+
+*Index Creation:
+----------------
+CREATE INDEX IDX_STOCK_SYMBOL ON STOCK_SYMBOL(SYMBOL) INCLUDE(COMPANY);
+
+
+*Index with Salt bucketing:
+----------------------------
+CREATE INDEX IDX_STOCK_SYMBOL1 ON STOCK_SYMBOL (SYMBOL DESC, COMPANY) SALT_BUCKETS=3, DATA_BLOCK_ENCODING='NONE';
+
+
+*CBO
+---------------------------------
+UPDATE STATISTICS STOCK_SYMBOL;
+
+
+*Joins:
+-------
+select a.SYMBOL ,b.COMPANY from STOCK_SYMBOL as a inner join STOCK_SYMBOL_BKP as b on a.SYMBOL=b.SYMBOL;
+
+SELECT D.SYMBOL,E.SYMBOL,E.COMPANY FROM STOCK_SYMBOL d LEFT OUTER JOIN STOCK_SYMBOL_BKP e ON e.SYMBOL = d.SYMBOL;
+
+SELECT D.SYMBOL,E.SYMBOL,E.COMPANY FROM STOCK_SYMBOL d RIGHT OUTER JOIN STOCK_SYMBOL_BKP e ON e.SYMBOL = d.SYMBOL;
+
+
+*Non interactive Query execution:
+---------------------------------
+Using psql
+Table creation and Bulk loading:
+psql.py localhost /home/hduser/phoenixdata/WEB_STAT.sql /home/hduser/phoenixdata/examples/WEB_STAT.csv
+
+Perform Webdata analytics:
+psql.py localhost /home/hduser/phoenixdata/WEB_STAT_QUERIES.sql
+
+
+*Set properties
+---------------
+!set maxwidth 200
+!set maxcolumnwidth 20
+
+
+
+
+
+
+
+
