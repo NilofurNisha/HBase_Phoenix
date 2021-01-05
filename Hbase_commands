@@ -1,0 +1,114 @@
+*List Tables
+------------
+list
+
+*List Databases
+---------------
+list_namespace
+
+
+*List tables under a database
+-----------------------------
+list_namespace_tables 'dbname'
+
+
+*Create database
+----------------
+create_namespace 'dbname'
+
+
+*Create table under database
+----------------------------
+create 'dbname:tblname','columnfamily1','columnfamilyn'
+
+
+
+*Insert data into table
+------------------------
+put 'tblname','rowkey','columnfamilyname:columnname','value'
+
+eg: 
+put 'tblcustomer','001','Personal:Name','Raahil'
+put 'tblcustomer','001','Personal:Age','20'
+put 'tblcustomer','001','Medical:history','Anemic'
+
+
+*Scan/select all the data from the table
+------------------------------------------
+scan 'tablename'
+
+
+*Scan/select with rowkey
+------------------------
+get 'tablename','rowkey'
+
+
+*Retrieve more versions
+-----------------------
+alter 'tablename',{NAME=>'columnfamilyname',VERSIONS=>1}
+put 'tablename','rowkey','columnfamilyname:columnname','value1'
+scan 'tablename',{VERSIONS => 1}
+
+(Altering versions to 3)
+alter 'tablename',{NAME=>'columnfamilyname',VERSIONS=>3}
+put 'tablename','rowkey','columnfamilyname:columnname','value2'
+put 'tablename','rowkey','columnfamilyname:columnname','value3'
+
+scan 'Patient1',{VERSIONS => 3}
+(versions =3 gives all 3 version's data,versions=1 gives the latest version of data)
+
+
+*Delete a specific column from rowkey
+-------------------------------------
+delete 'tablename','rowkey','columnfamilyname:columnname'
+
+
+*Delete an entire row
+---------------------
+delete 'tablename','rowkey'
+
+
+*Describe table
+---------------
+describe 'tablename'
+
+
+*Add column family
+-------------------
+alter 'tablename',{NAME=>'columnfamilyname'}
+
+
+*Drop the column family from the table
+---------------------------------------
+alter 'tablename',{NAME=>'Columnfamilyname',METHOD=>'delete'}
+
+
+
+*Execute the hbase commands from file
+--------------------------------------
+hbase shell /directorypath/hbase_commands.hbase
+
+(file extension-> .hbase)
+
+
+*Disable table
+---------------
+disable 'tablename'
+
+
+*Enable table
+-------------
+enable 'tablename'
+
+
+*Drop the table. Table should be disabled to drop.
+--------------------------------------------------
+drop 'Patient1'
+
+
+*Change configuration property in a table
+------------------------------------------
+alter 'tablename', CONFIGURATION => {NAME => 'Columnfamilyname', BLOCKCACHE => 'false'}
+
+
+
