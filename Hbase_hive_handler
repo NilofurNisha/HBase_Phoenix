@@ -1,0 +1,66 @@
+
+Hive-Hbase Handler
+=====================================================================================================================
+
+cp /usr/local/hive/conf/hive-env.sh.template /usr/local/hive/conf/hive-env.sh
+vi /usr/local/hive/conf/hive-env.sh
+export HIVE_AUX_JARS_PATH=/usr/local/hbase/lib
+
+*Add below jars in hive
+-----------------------
+add jar /usr/local/hive/lib/hive-hbase-handler-1.2.2.jar; 
+add jar /usr/local/hbase/lib/hbase-common-0.98.4-hadoop2.jar;
+add jar /usr/local/hbase/lib/zookeeper-3.4.6.jar;
+add jar /usr/local/hbase/lib/guava-12.0.1.jar;
+add jar /usr/local/hbase/lib/high-scale-lib-1.1.1.jar;
+
+
+*Create tables in Hive
+-----------------------
+CREATE external TABLE tblcustomerhbase(custid int, fname string, lname string,age int,prof string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES("hbase.columns.mapping" = ":key,cf1:firstname,cf1:lastname,cf1:age,cf1:prof")
+TBLPROPERTIES("hbase.table.name" = "tblcustomer");
+
+CREATE external TABLE txnrecordshbase(txnno int,txndate string,custno int,amount double,category string,product string,city string,state string,spendby string) STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES("hbase.columns.mapping" = ":key,cf1:tdate,cf1:cid,cf1:amt,cf1:category,cf1:product,cf1:city,cf1:state,cf1:ptype") 
+TBLPROPERTIES ("hbase.table.name" = "tbltrans");
+
+
+*Loading data into table
+------------------------
+insert into table txnrecordshbase select * from txnrecords limit 100;
+
+Composite Key insertion:
+============================
+CREATE TABLE custinfo_hive_complex ( fullname string,custno int,compositename struct
+<firstname:string,lastname:string>,age int, profession string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" =
+":key,custbase:custno,custbase:compositename,custbase:age,custaddon:profession")
+TBLPROPERTIES ("hbase.table.name" = "custinfo_hbase_composite");
+
+
+insert into custinfo_hive_complex select concat(firstname,' ',lastname) as fullname,custno,NAMED_STRUCT('firstname',firstname,'lastname',lastname) as compositename, age,profession from customer_info;
+
+
+*Fetch data in Hbase
+---------------------
+
+scan 'tbltrans'
+
+scan 'tblcustomer'
+
+
+
+*To get table column names in a table in linux cli
+------------------------------------------------------
+echo "scan Patient1" |hbase shell | awk -F'=' '{print $2}' | awk -F ':' '{print $2}'|awk -F ',' '{print $1}'
+
+
+
+
+
+
+
+
