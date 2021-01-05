@@ -1,0 +1,26 @@
+                                           
+                                                                Hive_Phoenix Handler:
+                                                                =====================
+
+*Creating source hive table and data loading
+----------------------------------------------
+create table retail.customer_hive(custno string, firstname string, lastname string, age int,profession string) row format delimited fields terminated by ',';
+
+load data local inpath '/home/hduser/hive/data/custs' into table retail.customer_hive;
+
+
+*Creating Hive_Phoenix table and loading data
+-----------------------------------------------
+create table retail.customer_hive_phoenix (custno int,fname varchar(100),lname varchar(100),age int,profession varchar(100))
+STORED BY 'org.apache.phoenix.hive.PhoenixStorageHandler'
+TBLPROPERTIES (
+"phoenix.table.name" = "cust_hive_phoenix",
+"phoenix.zookeeper.quorum" = "localhost",
+"phoenix.zookeeper.znode.parent" = "/hbase",
+"phoenix.zookeeper.client.port" = "2181",
+"phoenix.rowkeys" = "custno",
+"phoenix.column.mapping" = "rowkey:custno");
+
+
+insert into table retail.customer_hive_phoenix select * from retail.customer_hive;
+
