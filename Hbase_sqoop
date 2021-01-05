@@ -1,0 +1,15 @@
+
+Hbase_Sqoop 
+=================
+
+
+sqoop import --connect jdbc:mysql://localhost/custdb --username root --password root --table customer \
+--hbase-table customer --hbase-create-table --hbase-bulkload --column-family custinfo \
+--hbase-row-key custid -m 3 --split-by custid --delete-target-dir
+
+Sqoop can also import records into a table in HBase. By specifying --hbase-table, you instruct Sqoop to import to a table in HBase rather thana directory in HDFS.
+Sqoop will import data to the table specified as the argument to --hbase-table. Each row of the input table will be transformed into an HBase Put operation to a row of the output table. The key for each row is taken from a column of the input. By default Sqoop will use the split-by column as the row key column. If that is not specified, it will try to identify the primary key column, if any, of the source table. You can manually specify the row key column with --hbase-row-key. Each output column will be
+placed in the same column family, which must be specified with --column-family.
+
+
+
