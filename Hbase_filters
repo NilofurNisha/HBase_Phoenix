@@ -1,0 +1,146 @@
+
+HBase Filters
+============================================================================================================================================
+
+
+*keyonlyfilter
+-------------------------
+This filter does not take any arguments. It returns only the key component of each key-value.
+scan 'tablename',{ FILTER => "KeyOnlyFilter()"}
+
+
+*FirstKeyOnlyFilter
+--------------------
+This filter does not take any arguments. It returns only the first key-value (primary key)from each row
+scan 'tablename',{ FILTER => "FirstKeyOnlyFilter()"}
+
+
+*Prefixfilter
+-------------
+This filter takes one argument a prefix of a row key. It returns only those key-values present in a row that starts with the specified row prefix
+
+scan 'tablename', {FILTER => "(PrefixFilter ('row_prefix'))"}
+
+eg:
+scan 'Patient1', {FILTER => "(PrefixFilter ('002'))"}
+
+
+
+*ColumnPrefixFilter 
+---------------------
+This filter takes one argument a column prefix. It returns only those keyvalues present in a column that starts with the specified column prefix. The column prefix must be of the form qualifier
+
+scan 'tablename', {FILTER => "(PrefixFilter ('row_prefix')) AND ColumnPrefixFilter('column_prefix')"}
+
+eg:(returns value of a columnname starting with 'a')
+scan 'Patient1', {FILTER => "(PrefixFilter ('002')) AND ColumnPrefixFilter('a')"}
+
+
+
+*MultipleColumnPrefixFilter
+----------------------------
+This filter takes a list of column prefixes. It returns key-values that are present in a column that starts with any of the specified column prefixes. Each of the column prefixes must be of the form qualifier
+
+scan 'tablename',{FILTER => "MultipleColumnPrefixFilter('colum_prefix1','column_prefix2')"}
+
+eg:(returns all rows whose column names starts with 'p' and 'a')
+scan 'Patient1',{FILTER => "MultipleColumnPrefixFilter('p','a')"}
+
+
+
+*InclusiveStopFilter
+--------------------
+This filter takes one argument a row key on which to stop scanning. It returns all key-values present in rows up to and including the specified row.
+
+scan 'tablename',{FILTER => "InclusiveStopFilter('stop_row_key')"}
+
+
+*ColumnCountGetFilter
+----------------------
+This filter takes one argument as limit.It returns the primary limit number of columns within a table
+scan 'tablename', { FILTER => "ColumnCountGetFilter(1)"}
+
+
+*Page filter
+-------------
+This filter takes one argumnent as page size.It returns page size number of rows from the table
+
+scan 'tablename', { FILTER => "PageFilter(1)"}
+
+1 -> returns first row
+2 -> returns 1 & 2 rows
+3 -> returns 1,2 & 3 rows
+
+
+*Qualifier Filter(Family Filter)
+---------------------------------
+This filter takes a compare operator and a comparator. It compares every qualifier name with the comparator using the compare operator and if the comparison returns true,it returns all the key-values in this column.
+
+scan 'tablename','{FILTER => "QualifierFilter(=,'binary:columnname')"}
+
+
+*Value Filter
+-------------
+This filter takes a compare operator and a comparator. It compares every value  with the comparator using the compare operator and if the comparison returns true,it returns that key-value.
+
+scan 'tablename',{COLUMNS => 'Columnfamilyname:columnname',LIMIT => 3,FILTER => "ValueFilter(=,'binaryprefix:value')"}
+
+or
+
+scan 'tablename',{FILTER => "ValueFilter(=,'binaryprefix:value')"}
+
+
+
+*SingleColumnValueFilter
+------------------------
+This filter takes a columnfamilyname,qualifier,compare operator and a comparator.
+If the specified column isn't found,all the columns of that row are going to be emitted.
+And,if it is found and also comparison operator with comparator is true then all the columns of that row are going to be emitted.If the condition fails row won't be emitted.
+
+
+filterifColumnMissing flag - If this flag is set to true ,then the column wont be emitted if the specified column to examine isn't found within row. Default value is false
+setLatestVersionOnly flag - If this flag is set to false, it will check previous versions too.Default value is true
+
+These flags are optional
+
+scan 'tablename',{FILTER => "SingleColumnValueFilter('Personal','pname',=,'binaryprefix:alex')"}
+
+
+Difference between value filter and Single Column Value filter
+===============================================================
+
+*result of value filter
+-----------------------
+scan 'Patient1',{COLUMNS => 'Personal:pname'FILTER => "ValueFilter(=,'binaryprefix:alex')"}
+
+ROW                               COLUMN+CELL                                                                                   
+ 005                              column=Personal:pname, timestamp=1604297754480, value=alex                                    
+ 105                              column=Personal:pname, timestamp=1604297754655, value=alex 
+
+
+*result of single column value filter
+-------------------------------------
+ 
+scan 'tablename',{FILTER => "SingleColumnValueFilter('Personal','pname','=','binaryprefix:alex')"}
+
+ROW                               COLUMN+CELL                                                                                   
+ 005                              column=Personal:pname, timestamp=1604297754480, value=alex                                    
+ 102                              column=Medical:history, timestamp=1604297755287, value=Arthritis                              
+ 102                              column=Medical:oldhistory, timestamp=1604297755350, value=Ostophenia                          
+ 105                              column=Medical:history, timestamp=1604297755197, value=General check                          
+ 105                              column=Personal:pname, timestamp=1604297754655, value=alex                                    
+ 202                              column=Personal:addr, timestamp=1604297755023, value=3 first ave,NJ                           
+ 202                              column=Personal:age, timestamp=1604297754772, value=24                                        
+ 202                              column=Personal:filenum, timestamp=1604297754905, value=101  
+
+
+
+*Selecting columns and introducing limit
+---------------------------------------------
+scan 'tablename', { COLUMNS => 'Columnfamilyname:columnname', LIMIT => 2}
+
+
+
+
+
+
